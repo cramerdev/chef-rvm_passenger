@@ -31,14 +31,12 @@ configure_flags = node[:nginx][:configure_flags].join(" ")
 nginx_install = node[:nginx][:install_path]
 nginx_version = node[:nginx][:version]
 nginx_dir = node[:nginx][:dir]
-archive_cache = node[:nginx][:archive_cache]
 
 execute "build passenger_nginx_module" do
   command %Q{
     rvm #{node[:rvm_passenger][:rvm_ruby]} exec \
       passenger-install-nginx-module \
-        --auto --prefix=#{nginx_install} \
-        --nginx-source-dir=#{archive_cache}/nginx-#{nginx_version} \
+        --auto --auto-download --prefix=#{nginx_install} \
         --extra-configure-flags='#{configure_flags}'
   }
   not_if %Q{
