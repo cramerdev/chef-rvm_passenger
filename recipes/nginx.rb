@@ -32,17 +32,18 @@ nginx_install = node[:nginx][:install_path]
 nginx_version = node[:nginx][:version]
 nginx_dir = node[:nginx][:dir]
 
-execute "build passenger_nginx_module" do
-  command %Q{
-    rvm #{node[:rvm_passenger][:rvm_ruby]} exec \
-      passenger-install-nginx-module \
-        --auto --auto-download --prefix=#{nginx_install} \
-        --extra-configure-flags='#{configure_flags}'
-  }
-  not_if %Q{
+rvm_shell "build passenger_nginx_module" do
+  ruby_string   node[:rvm_passenger][:rvm_ruby]
+  code          <<-INSTALL
+    passenger-install-nginx-module \
+      --auto --prefix=#{nginx_install} \
+      --nginx-source-dir=#{archive_cache}/nginx-#{nginx_version} \
+      --extra-configure-flags='#{configure_flags}'
+  INSTALL
+  not_if        <<-CHECK
     #{nginx_install}/sbin/nginx -V 2>&1 | \
       grep "`cat /tmp/passenger_root_path`/ext/nginx"
-  }
+  CHECK
   notifies :restart, resources(:service => "nginx")
 end
 

@@ -26,7 +26,11 @@
 
 include_recipe "rvm"
 
-package "libcurl4-openssl-dev"
+if platform?("suse")
+  package "libcurl-devel"
+else
+  package "libcurl4-openssl-dev"
+end
 
 # install passenger gem
 rvm_gem "passenger" do
@@ -66,5 +70,8 @@ ruby_block "calculate rvm_passenger/ruby_wrapper" do
 
     Chef::Log.debug(%{Calculated value of rvm_passenger/ruby_wrapper is: "#{result}"})
     node.set[:rvm_passenger][:ruby_wrapper] = result
+  end
+  only_if do
+    node[:rvm_passenger][:ruby_wrapper].nil?
   end
 end
